@@ -20,8 +20,8 @@ let mode = 'file';
 
 // ── state پیش‌فرض ──
 const DEFAULT_USERS = [
-  { id: 'u1', name: 'من', color: '#6ea8fe', disabled: false, createdAt: 0 },
-  { id: 'u2', name: 'رفیق', color: '#44e2cd', disabled: false, createdAt: 0 },
+  { id: 'u1', name: 'من', color: '#a78bfa', disabled: false, createdAt: 0 },
+  { id: 'u2', name: 'رفیق', color: '#38bdf8', disabled: false, createdAt: 0 },
 ];
 
 function freshState() {

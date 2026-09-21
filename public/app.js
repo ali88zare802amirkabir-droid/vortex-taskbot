@@ -2,7 +2,7 @@
 const $ = (s, el) => (el || document).querySelector(s);
 const $$ = (s, el) => Array.from((el || document).querySelectorAll(s));
 
-const COLS = { bot: '#ffb877', pool: '#50e3c2' };
+const COLS = { bot: '#a78bfa', pool: '#38bdf8' };
 let STATE = null;
 let activeChat = null;
 let typingTimer = null;
