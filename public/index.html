@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>VORTEX TaskBot — ربات تقسیم پروژه</title>
+  <meta name="theme-color" content="#031427" />
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="icon" type="image/png" sizes="192x192" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23031427'/%3E%3Ctext x='32' y='44' font-size='34' font-family='Arial' font-weight='bold' fill='%236ea8fe' text-anchor='middle'%3EV%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
+  <link rel="stylesheet" href="style.css?v=1" />
+</head>
+<body>
+  <div id="app">
+    <!-- ── ستون لیست چت‌ها ── -->
+    <aside class="col" id="col">
+      <div class="col-head">
+        <div class="brand"><span class="mark">V</span><b>VORTEX</b><small> TaskBot</small></div>
+        <button class="icon-btn" id="btn-settings" title="تنظیمات"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M19.14 12.94c.04-.3.06-.61.06-.94s-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32a.49.49 0 0 0-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/></svg></button>
+      </div>
+
+      <nav class="chat-list" id="chat-list"></nav>
+
+      <div class="col-foot">
+        <span id="foot-pool">📦 ۰ در انبار</span>
+        <button class="btn ghost sm" id="btn-add-quick">+ پروژه</button>
+      </div>
+    </aside>
+
+    <!-- ── نمای چت ── -->
+    <main class="main" id="main">
+      <header class="cv-head" id="cv-head">
+        <button class="icon-btn mobile-only" id="btn-back" title="بازگشت"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg></button>
+        <span class="av" id="head-av">🤖</span>
+        <div class="head-meta">
+          <div class="head-name" id="head-name">ربات Vortex</div>
+          <div class="head-sub" id="head-sub">تقسیم پروژه‌ها</div>
+        </div>
+      </header>
+
+      <div class="cv-body" id="cv-body">
+        <div class="empty" id="empty">
+          <div class="empty-logo">V</div>
+          <h2>VORTEX TaskBot</h2>
+          <p>برای دیدن مکالمه یک چت انتخاب کن.</p>
+        </div>
+      </div>
+
+      <footer class="cv-input" id="cv-input"></footer>
+    </main>
+  </div>
+
+  <!-- ── مودال پروژه ── -->
+  <div class="modal hidden" id="modal-project">
+    <div class="modal-card">
+      <div class="modal-title" id="modal-title">پروژه جدید</div>
+      <label>عنوان *</label>
+      <input id="pf-title" maxlength="80" placeholder="مثلاً: ساخت صفحه لندینگ VortexGram" />
+      <label>توضیحات</label>
+      <textarea id="pf-desc" rows="3" maxlength="2000" placeholder="جزئیات، لینک، خواسته‌ها..."></textarea>
+      <div class="grid-2">
+        <div>
+          <label>سختی</label>
+          <select id="pf-difficulty">
+            <option value="easy">ساده</option>
+            <option value="normal" selected>متوسط</option>
+            <option value="hard">سخت</option>
+          </select>
+        </div>
+        <div>
+          <label>اولویت</label>
+          <select id="pf-priority">
+            <option value="0">کم</option>
+            <option value="1" selected>متوسط</option>
+            <option value="2">بالا 🔥</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div>
+          <label>ددلاین</label>
+          <input id="pf-deadline" type="date" />
+        </div>
+        <div>
+          <label>تگ‌ها (با کاما)</label>
+          <input id="pf-tags" placeholder="frontend, api" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn ghost" id="pf-cancel">انصراف</button>
+        <button class="btn primary" id="pf-save">ذخیره</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── مودال تنظیمات ── -->
+  <div class="modal hidden" id="modal-settings">
+    <div class="modal-card">
+      <div class="modal-title">تنظیمات تیم</div>
+      <div id="set-users"></div>
+      <div class="sep"></div>
+      <label class="muted">خطرناک</label>
+      <div class="row">
+        <button class="btn ghost" id="reset-assign">ریست تخصیص‌ها</button>
+        <button class="btn danger" id="reset-all">ریست همه‌چیز</button>
+      </div>
+      <div class="modal-actions">
+        <button class="btn primary" id="set-close">بستن</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="app.js?v=1"></script>
+</body>
+</html>
