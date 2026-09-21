@@ -29,26 +29,28 @@ npm test
 
 ## اجرا با PostgreSQL کامل (موتور Render رایگان)
 
-روی Render دو راه دارید:
+> ⚠️ هر ورک‌اسپیس Render فقط **یک دیتابیس رایگان** دارد. TaskBot از همان
+> دیتابیس رایگان استفاده می‌کند ولی همه‌چیز را داخل **اسکیمای مجزای `taskbot`**
+> می‌سازد و موقع بالا آمدن خودش جدول‌ها را می‌سازد (بدون نیاز به migrate دستی)؛
+> پس دیتای بقیه اپ‌های شما دست نمی‌خورد.
 
-### راه ۱ — Blueprint (دستور render.yaml در این پروژه)
-1. کد را به یک مخزن GitHub پوش کنید.
+### راه ۱ — Blueprint (render.yaml)
+1. کد را به مخزن GitHub پوش کنید.
 2. در Render → `New +` → **Blueprint** → مخزن را انتخاب کنید.
-3. `render.yaml` خودش **Postgres رایگان** + سرویس وب را می‌سازد و `DATABASE_URL` را به سرویس وصل می‌کند.
-4. اولین دیپلوی تمام شد. آدرس سرویس همان اپ شماست.
+3. `DATABASE_URL` را با connectionString داخلیِ یکی از دیتابیس‌های موجود خودتان
+   پر کنید (`internalConnectionString` از صفحه‌ی Postgres → Connect).
 
-### راه ۲ — دستی (همین ساختار، کنترل بیشتر)
-1. `New +` → **PostgreSQL** (plan: free) و یادداشتِ `connectionString` داخلی.
+### راه ۲ — دستی
+1. داشبورد Render → Postgres موجود → Connect → **Internal Connection String** را کپی کنید.
 2. `New +` → **Web Service** → مخزن را انتخاب کنید.
-   - Environment: **Docker** (Dockerfile همین پروژه)
-   - Plan: **Free**
-3. در بخش Environment:
+   - Environment: **Docker** · Plan: **Free**
+3. Environment Variables:
    - `NODE_ENV = production`
    - `TRUST_PROXY = 1`
-   - `DATABASE_URL = <connectionString از Postgres>`
-4. دومی ۱۰–۱۵ ثانیه — خود سرور موقع بالا آمدن جدول‌ها را می‌سازد (نیازی به migrate دستی نیست).
+   - `DATABASE_URL = <internalConnectionString>`
 
-> چون Render Free بعد از بی‌استفاده‌ای می‌خوابد، اولین بازدید چند ثانیه صبر می‌کند. طبیعی است.
+> چون Render Free بعد از بی‌استفاده‌ای می‌خوابد، اولین بازدید چند ثانیه صبر
+> می‌کند. طبیعی است.
 
 ### حین توسعه با دیتابیس واقعی
 اگر `DATABASE_URL` ست باشد، اپ خودکار از Postgres می‌خواند/می‌نویسد. ساخت جدول‌ها هم دستی:

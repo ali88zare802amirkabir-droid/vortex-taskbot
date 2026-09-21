@@ -1,10 +1,7 @@
-databases:
-  - name: vortex-taskbot-db
-    plan: free
-    databaseName: vortex_taskbot
-    user: vortex
-
 services:
+  # نکته: رندر فقط «یک دیتابیس رایگان» در هر ورکاسپیس اجازه می‌دهد.
+  # TaskBot از DATABASE_URL شما استفاده می‌کند و همه‌چیز را داخل اسکیمای
+  # مجزای `taskbot` می‌سازد؛ پس دیتای بقیه اپ‌ها دست نمی‌خورد.
   - type: web
     name: vortex-taskbot
     runtime: docker
@@ -17,6 +14,6 @@ services:
       - key: TRUST_PROXY
         value: "1"
       - key: DATABASE_URL
-        fromDatabase:
-          name: vortex-taskbot-db
-          property: connectionString
+        value: YourPostgresInternalConnectionString
+      - key: PORT
+        value: "3000"

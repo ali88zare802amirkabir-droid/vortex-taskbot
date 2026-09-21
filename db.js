@@ -10,6 +10,9 @@ const path = require('path');
 const { Pool } = require('pg');
 
 const DB_FILE = process.env.DB_FILE || path.join(__dirname, 'data', 'db.json');
+const SCHEMA = 'taskbot';
+const T = (t) => SCHEMA + '.' + t;
+const SCHEMA_SQL = path.join(__dirname, 'db', 'schema.sql');
 
 let pool = null;
 let healthy = false;
@@ -37,7 +40,11 @@ let queue = Promise.resolve();
 async function _pgConnect() {
   if (pool) return pool;
   if (!process.env.DATABASE_URL) return null;
-  pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 10 });
+  const host = (process.env.DATABASE_URL.replace(/^[a-z]+:\/\/[^@]*@/, '').split('/')[0].split(':')[0] || '').trim();
+  const isLocal = !host || host === 'localhost' || host === '127.0.0.1' || host === '::1';
+  const cfg = { connectionString: process.env.DATABASE_URL, max: 10 };
+  if (!isLocal) cfg.ssl = { rejectUnauthorized: false };
+  pool = new Pool(cfg);
   try {
     await pool.query('SELECT 1');
   } catch (e) {
@@ -48,15 +55,20 @@ async function _pgConnect() {
   return pool;
 }
 
+async function _ensureSchema(p) {
+  const sql = fs.readFileSync(SCHEMA_SQL, 'utf8');
+  await p.query(sql);
+}
+
 async function _loadFromPg() {
   const p = await _pgConnect();
   if (!p) return null;
   try {
     const [u, pr, ev, meta] = await Promise.all([
-      p.query('SELECT id, name, color, disabled, created_at FROM users'),
-      p.query('SELECT id, title, description, difficulty, priority, deadline, tags, status, assigned_to, created_at, updated_at FROM projects'),
-      p.query('SELECT id, type, project_id, user_id, text, created_at FROM events ORDER BY created_at ASC, id ASC'),
-      p.query("SELECT key, value FROM meta WHERE key IN ('seq_users','seq_projects','seq_events')"),
+      p.query(`SELECT id, name, color, disabled, created_at FROM ${T('users')}`),
+      p.query(`SELECT id, title, description, difficulty, priority, deadline, tags, status, assigned_to, created_at, updated_at FROM ${T('projects')}`),
+      p.query(`SELECT id, type, project_id, user_id, text, created_at FROM ${T('events')} ORDER BY created_at ASC, id ASC`),
+      p.query(`SELECT key, value FROM ${T('meta')} WHERE key IN ('seq_users','seq_projects','seq_events')`),
     ]);
     const m = {};
     for (const row of meta.rows) m[row.key] = row.value;
@@ -92,16 +104,16 @@ async function _saveToPg() {
   const client = await p.connect();
   try {
     await client.query('BEGIN');
-    await client.query('TRUNCATE users, projects, events, meta');
+    await client.query(`TRUNCATE ${T('users')}, ${T('projects')}, ${T('events')}, ${T('meta')}`);
     for (const u of db.users) {
       await client.query(
-        'INSERT INTO users (id, name, color, disabled, created_at) VALUES ($1,$2,$3,$4,$5)',
+        `INSERT INTO ${T('users')} (id, name, color, disabled, created_at) VALUES ($1,$2,$3,$4,$5)`,
         [u.id, u.name, u.color, !!u.disabled, Number(u.createdAt || 0)]
       );
     }
     for (const pr of db.projects) {
       await client.query(
-        `INSERT INTO projects (id, title, description, difficulty, priority, deadline, tags, status, assigned_to, created_at, updated_at)
+        `INSERT INTO ${T('projects')} (id, title, description, difficulty, priority, deadline, tags, status, assigned_to, created_at, updated_at)
          VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
         [pr.id, pr.title, pr.description || '', pr.difficulty || 'normal',
          Number(pr.priority || 1), pr.deadline || '', pr.tags || [], pr.status || 'available',
@@ -110,13 +122,13 @@ async function _saveToPg() {
     }
     for (const e of db.events) {
       await client.query(
-        'INSERT INTO events (id, type, project_id, user_id, text, created_at) VALUES ($1,$2,$3,$4,$5,$6)',
+        `INSERT INTO ${T('events')} (id, type, project_id, user_id, text, created_at) VALUES ($1,$2,$3,$4,$5,$6)`,
         [e.id, e.type || 'note', e.projectId || null, e.userId || null, e.text || '', Number(e.createdAt || 0)]
       );
     }
-    await client.query('INSERT INTO meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value', ['seq_users', String(db.seq.users)]);
-    await client.query('INSERT INTO meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value', ['seq_projects', String(db.seq.projects)]);
-    await client.query('INSERT INTO meta (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value', ['seq_events', String(db.seq.events)]);
+    await client.query(`INSERT INTO ${T('meta')} (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, ['seq_users', String(db.seq.users)]);
+    await client.query(`INSERT INTO ${T('meta')} (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, ['seq_projects', String(db.seq.projects)]);
+    await client.query(`INSERT INTO ${T('meta')} (key,value) VALUES ($1,$2) ON CONFLICT (key) DO UPDATE SET value=EXCLUDED.value`, ['seq_events', String(db.seq.events)]);
     await client.query('COMMIT');
   } catch (e) {
     try { await client.query('ROLLBACK'); } catch {}
@@ -155,8 +167,13 @@ async function init() {
   if (process.env.DATABASE_URL) {
     const p = await _pgConnect();
     if (p) {
+      try {
+        await _ensureSchema(p);
+      } catch (e) {
+        console.error('⚠️ ساخت اسکیما ناموفق، فالبک روی JSON:', e.message);
+      }
       loaded = await _loadFromPg();
-      if (loaded) { mode = 'pg'; healthy = true; console.log('[db] PostgreSQL backend'); }
+      if (loaded) { mode = 'pg'; healthy = true; console.log('[db] PostgreSQL backend (schema ' + SCHEMA + ')'); }
     }
   }
   if (!healthy) {
