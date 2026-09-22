@@ -394,7 +394,7 @@ function openProjectModal(p) {
   $('#modal-title').textContent = p ? 'ویرایش پروژه' : 'پروژه جدید';
   $('#pf-title').value = p ? p.title : '';
   $('#pf-desc').value = p ? p.description : '';
-  $('#pf-difficulty').value = p ? p.difficulty : 'normal';
+  $('#pf-difficulty').value = p ? p.difficulty : 'auto';
   $('#pf-priority').value = p ? String(p.priority) : '1';
   $('#pf-deadline').value = p && p.deadline ? p.deadline.split('T')[0] : '';
   $('#pf-tags').value = p ? (p.tags || []).join('، ') : '';
@@ -448,6 +448,13 @@ function renderSettings() {
     });
     set.appendChild(row);
   }
+  (async () => {
+    try {
+      const s = await api('/api/ai/status');
+      const prov = s.providers && s.providers.length ? s.providers.map((p) => '✓ ' + p).join(' · ') : 'کلیدی ست نشده';
+      $('#ai-status').textContent = '🤖 AI: ' + prov + ' · هیوریستیک لوکال فعال';
+    } catch (_) { $('#ai-status').textContent = '🤖 AI: نامشخص'; }
+  })();
   $('#reset-assign').onclick = async () => {
     if (!confirm('همه تخصیص‌ها ریست بشن (پروژه‌ها برگردن انبار)؟')) return;
     try { await api('/api/reset', 'POST', { mode: 'assignments' }); await reload(); renderChatList(); renderView(); toast('تخصیص‌ها ریست شد 🧹'); } catch (e) { toast(e.message, true); }

@@ -10,7 +10,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap" media="print" onload="this.media='all'" />
-  <link rel="stylesheet" href="style.css?v=1" />
+  <link rel="stylesheet" href="style.css?v=2" />
 </head>
 <body>
   <div id="app">
@@ -64,8 +64,9 @@
         <div>
           <label>سختی</label>
           <select id="pf-difficulty">
+            <option value="auto" selected>خودکار (AI) 🤖</option>
             <option value="easy">ساده</option>
-            <option value="normal" selected>متوسط</option>
+            <option value="normal">متوسط</option>
             <option value="hard">سخت</option>
           </select>
         </div>
@@ -73,7 +74,7 @@
           <label>اولویت</label>
           <select id="pf-priority">
             <option value="0">کم</option>
-            <option value="1" selected>متوسط</option>
+            <option value="1">متوسط</option>
             <option value="2">بالا 🔥</option>
           </select>
         </div>
@@ -99,6 +100,7 @@
   <div class="modal hidden" id="modal-settings">
     <div class="modal-card">
       <div class="modal-title">تنظیمات تیم</div>
+      <div id="ai-status" class="stat-chip" style="margin-bottom:10px">🤖 …</div>
       <div id="set-users"></div>
       <div class="sep"></div>
       <label class="muted">خطرناک</label>
@@ -114,6 +116,6 @@
 
   <div class="toasts" id="toasts"></div>
 
-  <script src="app.js?v=1"></script>
+  <script src="app.js?v=2"></script>
 </body>
 </html>

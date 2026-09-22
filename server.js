@@ -6,6 +6,7 @@ const express = require('express');
 const path = require('path');
 const db = require('./db');
 const engine = require('./lib/engine');
+const ai = require('./lib/ai');
 
 const app = express();
 app.use(express.json({ limit: '1mb' }));
@@ -15,6 +16,8 @@ if (process.env.TRUST_PROXY === '1') app.set('trust proxy', 1);
 // ───────────────────────────────────────────────────────────── helpers ──────
 const U = (u) => (u ? u.name : '؟');
 const T = (p) => (p ? p.title : 'پروژه');
+const AI_DIFF = { easy: 'ساده', normal: 'متوسط', hard: 'سخت' };
+const AI_PRI = { 0: 'کم', 1: 'متوسط', 2: 'بالا' };
 
 function userById(state, id) {
   return state.users.find((u) => u.id === id) || null;
@@ -105,30 +108,45 @@ app.post('/api/users/:id', async (req, res) => {
 app.post('/api/projects', async (req, res) => {
   const b = req.body || {};
   const title = (b.title || '').trim();
+  const description = (b.description || '').trim();
   if (!title) return res.status(400).json({ error: 'عنوان پروژه الزامی است' });
   try {
+    // اگر سختی دستی انتخاب نشده باشد → تحلیل خودکار AI
+    const isManual = ['easy', 'normal', 'hard'].includes(b.difficulty);
+    let aiResult = null;
+    if (!isManual) {
+      aiResult = await ai.classify(title, description);
+      if (!aiResult) aiResult = ai.heuristic(title, description);
+    }
+    const manualTags = Array.isArray(b.tags) ? b.tags.filter((t) => typeof t === 'string').map((t) => t.trim().slice(0, 30)).filter(Boolean).slice(0, 10) : [];
     const project = await db.mutate((state) => {
       const p = {
         id: db.nextId('projects'),
         title: title.slice(0, 80),
-        description: (b.description || '').trim().slice(0, 2000),
-        difficulty: ['easy', 'normal', 'hard'].includes(b.difficulty) ? b.difficulty : 'normal',
-        priority: Math.max(0, Math.min(2, parseInt(b.priority, 10) || 1)),
+        description: description.slice(0, 2000),
+        difficulty: isManual ? b.difficulty : (aiResult ? aiResult.difficulty : 'normal'),
+        priority: isManual ? Math.max(0, Math.min(2, parseInt(b.priority, 10) || 1)) : (aiResult ? aiResult.priority : 1),
         deadline: (b.deadline || '').trim().slice(0, 40),
-        tags: Array.isArray(b.tags) ? b.tags.filter((t) => typeof t === 'string').map((t) => t.trim().slice(0, 30)).filter(Boolean).slice(0, 10) : [],
+        tags: manualTags.length ? manualTags : (aiResult && aiResult.tags.length ? aiResult.tags : []),
         status: 'available',
         assignedTo: null,
         createdAt: db.now(),
         updatedAt: db.now(),
+        aiTag: aiResult ? aiResult.provider : null,
       };
       state.projects.push(p);
-      pushEvent(state, 'add', p, null);
+      if (aiResult) pushEvent(state, 'add', p, null, { text: '🤖 ' + AI_DIFF[p.difficulty] + ' · اولویت ' + AI_PRI[p.priority] + ' (' + aiResult.provider + ')' });
+      else pushEvent(state, 'add', p, null);
       return p;
     });
     res.json({ ok: true, project });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
+});
+
+app.get('/api/ai/status', (req, res) => {
+  res.json({ enabled: ai.configured().length > 0, providers: ai.configured(), heuristic: true });
 });
 
 app.put('/api/projects/:id', async (req, res) => {
