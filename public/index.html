@@ -58,37 +58,40 @@
       <div class="modal-title" id="modal-title">پروژه جدید</div>
       <label>عنوان *</label>
       <input id="pf-title" maxlength="80" placeholder="مثلاً: ساخت صفحه لندینگ VortexGram" />
-      <label>توضیحات</label>
+      <label>توضیحات (اختیاری)</label>
       <textarea id="pf-desc" rows="3" maxlength="2000" placeholder="جزئیات، لینک، خواسته‌ها..."></textarea>
-      <div class="grid-2">
-        <div>
-          <label>سختی</label>
-          <select id="pf-difficulty">
-            <option value="auto" selected>خودکار (AI) 🤖</option>
-            <option value="easy">ساده</option>
-            <option value="normal">متوسط</option>
-            <option value="hard">سخت</option>
-          </select>
+      <details class="advanced" id="adv-fields">
+        <summary>⚙️ تنظیمات پیشرفته (اختیاری) — پیش‌فرض همه خودکار 🤖</summary>
+        <div class="grid-2">
+          <div>
+            <label>سختی</label>
+            <select id="pf-difficulty">
+              <option value="auto" selected>خودکار (AI) 🤖</option>
+              <option value="easy">ساده</option>
+              <option value="normal">متوسط</option>
+              <option value="hard">سخت</option>
+            </select>
+          </div>
+          <div>
+            <label>اولویت</label>
+            <select id="pf-priority">
+              <option value="0">کم</option>
+              <option value="1">متوسط</option>
+              <option value="2">بالا 🔥</option>
+            </select>
+          </div>
         </div>
-        <div>
-          <label>اولویت</label>
-          <select id="pf-priority">
-            <option value="0">کم</option>
-            <option value="1">متوسط</option>
-            <option value="2">بالا 🔥</option>
-          </select>
+        <div class="grid-2">
+          <div>
+            <label>ددلاین</label>
+            <input id="pf-deadline" type="date" />
+          </div>
+          <div>
+            <label>تگ‌ها (با کاما)</label>
+            <input id="pf-tags" placeholder="frontend, api" />
+          </div>
         </div>
-      </div>
-      <div class="grid-2">
-        <div>
-          <label>ددلاین</label>
-          <input id="pf-deadline" type="date" />
-        </div>
-        <div>
-          <label>تگ‌ها (با کاما)</label>
-          <input id="pf-tags" placeholder="frontend, api" />
-        </div>
-      </div>
+      </details>
       <div class="modal-actions">
         <button class="btn ghost" id="pf-cancel">انصراف</button>
         <button class="btn primary" id="pf-save">ذخیره</button>
